@@ -1,0 +1,16 @@
+{
+  "_note": "Seed set from the Phase 0 spike (Bandcamp side copied from real pages, input durations approximate). Replace/extend with 30-50 of your own tracks: correct=true when the candidate is the right release.",
+  "pairs": [
+    {"artists": ["Calibre"], "title": "Even If", "duration_s": 454, "bc_artist": "Calibre", "bc_title": "Even If", "bc_duration_s": 454.253, "correct": true},
+    {"artists": ["Four Tet"], "title": "Baby", "duration_s": 264, "bc_artist": "Four Tet", "bc_title": "Baby", "bc_duration_s": 264.465, "correct": true},
+    {"artists": ["Four Tet"], "title": "Baby", "duration_s": 264, "bc_artist": "Four Tet", "bc_title": "Baby (Tony Romera Remix)", "bc_duration_s": 401.86, "correct": false},
+    {"artists": ["Four Tet", "Tony Romera"], "title": "Baby - Tony Romera Remix", "duration_s": 402, "bc_artist": "Four Tet", "bc_title": "Baby (Tony Romera Remix)", "bc_duration_s": 401.86, "correct": true},
+    {"artists": ["Burial"], "title": "Archangel", "duration_s": 238, "bc_artist": "oylumtanis", "bc_title": "Burial - Archangel", "bc_duration_s": 180.01, "correct": false},
+    {"artists": ["Burial"], "title": "Archangel", "duration_s": 238, "bc_artist": "Noneohone", "bc_title": "Burial- Archangel (Noneohone UKG Edit)", "bc_duration_s": 281.143, "correct": false},
+    {"artists": ["Burial", "Noneohone"], "title": "Archangel (Noneohone UKG Edit)", "duration_s": 281, "bc_artist": "Noneohone", "bc_title": "Burial- Archangel (Noneohone UKG Edit)", "bc_duration_s": 281.143, "correct": true},
+    {"artists": ["Bonobo"], "title": "Kiara", "duration_s": 226, "bc_artist": "Richard Houghten", "bc_title": "Bonobo/Kiara", "bc_duration_s": 219.697, "correct": false},
+    {"artists": ["Bonobo"], "title": "Kiara", "duration_s": 226, "bc_artist": "Bonobo", "bc_title": "Bonobo - Kiara (Lakritzio remix)", "bc_duration_s": null, "correct": false},
+    {"artists": ["Bicep"], "title": "Glue", "duration_s": 269, "bc_artist": "Livsey", "bc_title": "Bicep - Glue (Livsey Bootleg)", "bc_duration_s": null, "correct": false},
+    {"artists": ["Machinedrum", "Sub Focus"], "title": "1000 Miles (feat. Sub Focus)", "duration_s": null, "bc_artist": "Machinedrum", "bc_title": "1000 Miles (feat. Sub Focus)", "bc_duration_s": null, "correct": true}
+  ]
+}
