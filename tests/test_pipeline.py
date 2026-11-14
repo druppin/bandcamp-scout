@@ -77,6 +77,23 @@ class Pipeline(unittest.TestCase):
         self.assertEqual(scout.check_track(bad, self.cache, EDIT)["status"], "no_match")
 
 
+    def test_redirect_loop_skips_candidate(self):
+        def handler(r):
+            if "autocomplete" in str(r.url):
+                return httpx.Response(200, json={"auto": {"results": [
+                    {"type": "t", "name": "Archangel (Noneohone UKG Edit)", "band_name": "Label",
+                     "item_url_path": "https://music.label.com/track/x"},
+                    {"type": "t", "name": "Burial- Archangel (Noneohone UKG Edit)", "band_name": "Noneohone",
+                     "item_url_path": "https://noneohone.bandcamp.com/track/burial-archangel-noneohone-ukg-edit"}]}})
+            if "label" in str(r.url):  # custom domain <-> bandcamp.com loop seen on music.monstercat.com
+                other = "https://label.bandcamp.com/track/x" if "music." in str(r.url) else "https://music.label.com/track/x"
+                return httpx.Response(303, headers={"Location": other})
+            return bandcamp_transport([]).handle_request(r)
+        c = Client(delay=0, jitter=0, transport=httpx.MockTransport(handler))
+        r = scout.check_track(c, self.cache, EDIT)
+        self.assertEqual((r["status"], r["price_type"]), ("match", "nyp_zero"))
+
+
 class Retries(unittest.TestCase):
     def test_backs_off_on_429_then_succeeds(self):
         replies, slept = [429, 503, 200], []

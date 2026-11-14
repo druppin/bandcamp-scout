@@ -1,5 +1,7 @@
 import argparse
 import sys
+
+import httpx
 from pathlib import Path
 
 from . import config, inputs, pricing, report, scout
@@ -52,10 +54,16 @@ def cmd_run(args):
     if args.limit:
         todo = todo[: args.limit]
     print(f"{len(tracks)} tracks, {len(tracks) - len(todo)} already checked, {len(todo)} to do")
-    client, hits = Client(), 0
+    client, hits, failed = Client(), 0, 0
     try:
         for i, t in enumerate(todo, 1):
-            r = scout.check_track(client, cache, t, args.ttl_days, args.refresh)
+            try:
+                r = scout.check_track(client, cache, t, args.ttl_days, args.refresh)
+            except httpx.HTTPError as e:
+                # no result stored, so the next run retries this track
+                failed += 1
+                print(f"\nskipped {', '.join(t.artists)} - {t.title}: {e}", file=sys.stderr)
+                continue
             cache.put_result(t.key, r)
             hits += r["status"] == "match" and r.get("price_type") in ("free", "nyp_zero", "nyp_min")
             print(f"\r{i}/{len(todo)}  free/NYP hits: {hits}  ", end="", flush=True)
@@ -63,6 +71,8 @@ def cmd_run(args):
         print("\nstopped; run again to resume")
         return 130
     print()
+    if failed:
+        print(f"{failed} tracks failed (network); run again to retry them")
     print(report.stats(cache.rows()))
 
 

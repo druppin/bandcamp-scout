@@ -26,7 +26,8 @@ def get_candidate(client, cache, url, ttl_days, refresh) -> Candidate | None:
         return Candidate.from_json(cached)
     try:
         c = bandcamp.fetch_release(client, url)
-    except (ParseError, httpx.HTTPStatusError):
+    except (ParseError, httpx.HTTPError):
+        # e.g. custom-domain labels that redirect-loop into a bot challenge: skip that candidate
         return None
     cache.put_page(url, c.to_json())
     return c

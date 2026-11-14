@@ -59,3 +59,7 @@ Every page sampled (Calibre, Four Tet, New Breed, many bootlegs) was NYP, so exp
 - [ ] A real fixed-price page, to confirm `is_set_price`.
 - [ ] A labeled set of 30–50 of *your* tracks (`tests/fixtures/labeled.json` has an 11-pair seed from this spike).
 - [ ] Phase 5 linking key (cratesync): not looked at yet.
+
+## Custom domains (2026-11-14)
+
+Some labels serve Bandcamp from their own domain (e.g. `music.monstercat.com`). For non-browser clients that domain 303s to `<label>.bandcamp.com`, which 301s back, forever; a browser User-Agent gets one redirect and then a "Client Challenge" (bot check) page with no `data-tralbum`. The scout doesn't try to get past it: such candidates are skipped. Tracks only sold through those labels will show as `no_match`.
