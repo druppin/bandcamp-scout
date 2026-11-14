@@ -56,7 +56,7 @@ Every page sampled (Calibre, Four Tet, New Breed, many bootlegs) was NYP, so exp
 
 ## Still open
 
-- [ ] A real fixed-price page, to confirm `is_set_price`.
+- [x] Fixed price: 41 matches in the full run classified `paid`, so `is_set_price` does get set on real pages (no fixture captured yet).
 - [ ] A labeled set of 30–50 of *your* tracks (`tests/fixtures/labeled.json` has an 11-pair seed from this spike).
 - [ ] Phase 5 linking key (cratesync): not looked at yet.
 

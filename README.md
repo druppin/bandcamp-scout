@@ -38,6 +38,7 @@ time = "09:00"
 scout inputs --playlist liked              # what would be scouted
 scout lookup "Calibre" "Even If" --duration 454
 scout run --limit 25                       # resumable; Ctrl-C and re-run
+scout run --offline                        # re-score everything from the cache after a matching change
 scout report --out report.csv [--only free,nyp_zero,nyp_min,review]
 scout override KEY --url URL | --none      # manual fix, always wins, survives --refresh
 scout stats
@@ -48,7 +49,7 @@ The cache lives at `~/.local/share/bandcamp-scout/scout.db` (`--db` to move it, 
 
 ## Matching
 
-Artist and title are normalized (accents, `&`, feat., `(Original Mix)`, `[Label]`), the remix/edit name is kept separate, and each candidate gets a 0–1 score: title 0.45, artist 0.35, duration 0.20 (full within ±3 s, zero at ±15 s, 0.5 if unknown). A version mismatch (remix vs original, different remixers) caps the score at 0.5. ≥ 0.90 is `match`, 0.75–0.90 `review`, below that `no_match`. Bootleg uploads titled "Artist - Title" on someone else's account are handled; a wrong-length reupload lands in `review`, never `match`.
+Artist and title are normalized (accents, `&`, feat., `(Original Mix)`, `[Label]`), the remix/edit name is kept separate, and each candidate gets a 0–1 score: title 0.45, artist 0.35, duration 0.20 (full within ±3 s, zero at ±15 s, 0.5 if unknown). A version mismatch (remix vs original, different remixers, live, 8-bit, karaoke, sped up…) caps the score at 0.5. Artist names are compared whole ("Zim" isn't "Gera Zim Zum"), and an upload on someone else's account ("Artist - Title") only counts as a match when its length is within 2 s. ≥ 0.90 is `match`, 0.75–0.90 `review`, below that `no_match`. Bootleg uploads titled "Artist - Title" on someone else's account are handled; a wrong-length reupload lands in `review`, never `match`.
 
 Price types: `free`, `nyp_zero`, `nyp_min`, `paid`, `album_only` (track not sold alone; album price shown), `not_for_sale`, `unknown` (a field was missing; never guessed). The album's own price type is reported next to the track's.
 
@@ -62,4 +63,16 @@ Offline only: saved search responses and pages in `tests/fixtures/`.
 
 ## Results
 
-Go/no-go numbers for the mixxx-harness mod (Phase 5) go here after the first full run (`scout stats`).
+First full run, 2026-11-14: 2,631 tracks (Subgenre Assistant playlists), ~3 h at ~4 s/track.
+
+| | tracks |
+|---|---|
+| match | 792 (30%) |
+| review | 301 |
+| no_match | 1,538 |
+
+Matched, by price: NYP with a minimum 668, album-only 41, paid 41, **NYP $0 34, free 8**.
+
+So most of the library is on Bandcamp, but nearly all of it is "name your price, minimum $X": effectively paid. Only 42 matches are truly free (free + NYP $0). Go/no-go for the Phase 5 mod: worth it for a "Bandcamp: NYP" crate (668); a "Bandcamp: free" crate alone would be thin.
+
+Matching was tuned on this run by spot-checking random and lowest-scoring matches (`scout run --offline` re-scores from the cache with no network). Known leftovers: a cover by a near-identically named act with the same length (e.g. "Ghosts and Ghulehs" covering Ghost) can still match.

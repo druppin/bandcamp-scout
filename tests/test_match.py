@@ -28,6 +28,25 @@ class Normalize(unittest.TestCase):
                          (["noneohone", "burial"], "archangel", "noneohone ukg edit"))
         self.assertEqual(match.candidate_names("X", "Hip-Hop Song"), (["x"], "hip hop song", None))
 
+    def test_artist_names_are_whole(self):
+        self.assertEqual(match.artist_names(["DJ Marky & S.P.Y", "Mura Masa x Rihanna", "X", "The Misfits"]),
+                         ["dj marky", "s p y", "mura masa", "rihanna", "x", "misfits"])
+        self.assertNotEqual(match.status(match.score(["Rush"], "Xanadu", 665, "Gush", "Xanadu", 666)), "match")
+        self.assertEqual(match.split_title("Crazy Train (8-bit)")[1], "8 bit")
+        self.assertEqual(match.split_title("Still the One (live)")[1], "live")
+        # cover bands and name-alikes no longer count as the artist
+        self.assertEqual(match.status(match.score(["Zim"], "Touch Me", 180, "Gera Zim Zum", "Touch Me", 174)), "no_match")
+        self.assertNotEqual(match.status(match.score(["Misfits"], "Astro Zombies", 131, "8-Bit Misfits", "Astro Zombies", 140)), "match")
+
+    def test_other_accounts_upload_needs_same_length(self):
+        repost = dict(artists=["Coldplay"], title="Clocks", bc_artist="Artists Project", bc_title="Coldplay - Clocks")
+        self.assertEqual(match.status(match.score(duration_s=308, bc_duration_s=302, **repost)), "review")
+        self.assertEqual(match.status(match.score(duration_s=208, bc_duration_s=208, **{**repost, "bc_artist": "Garage Shared"})), "match")
+
+    def test_title_subset_is_not_a_match(self):
+        s = match.score(["JOYRYDE"], "ON FIRE", 200, "Joyride and Crabbz", "Chestnuts Roasting On An Open Fire", 200)
+        self.assertEqual(match.status(s), "no_match")
+
     def test_duration(self):
         self.assertEqual(match.duration_score(200, 203), 1.0)
         self.assertEqual(match.duration_score(200, 215), 0.0)

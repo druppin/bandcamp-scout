@@ -46,15 +46,26 @@ def cmd_lookup(args):
               f"{c.artist} — {c.title} ({c.duration_s or '?'}s)\n      {c.url}")
 
 
+def offline_client() -> Client:
+    def refuse(request):
+        raise httpx.ConnectError("offline: not in cache", request=request)
+    return Client(delay=0, jitter=0, retries=0, transport=httpx.MockTransport(refuse))
+
+
 def cmd_run(args):
-    tracks = load_tracks(args)
     cache = Cache(args.db)
-    cache.put_inputs(tracks)
-    todo = [t for t in tracks if args.refresh or not is_fresh(cache.result_checked_at(t.key), args.ttl_days)]
+    if args.offline:  # re-score every cached track after a matching change; no network, no Assistant
+        tracks = todo = cache.all_inputs()
+        client, args.refresh = offline_client(), False
+    else:
+        tracks = load_tracks(args)
+        cache.put_inputs(tracks)
+        todo = [t for t in tracks if args.refresh or not is_fresh(cache.result_checked_at(t.key), args.ttl_days)]
+        client = Client()
     if args.limit:
         todo = todo[: args.limit]
     print(f"{len(tracks)} tracks, {len(tracks) - len(todo)} already checked, {len(todo)} to do")
-    client, hits, failed = Client(), 0, 0
+    hits, failed = 0, 0
     try:
         for i, t in enumerate(todo, 1):
             try:
@@ -132,6 +143,7 @@ def main(argv=None):
     source(sp)
     sp.add_argument("--limit", type=int)
     sp.add_argument("--refresh", action="store_true", help="ignore cached searches, pages and results")
+    sp.add_argument("--offline", action="store_true", help="re-score all cached tracks from the cache only")
     ttl(sp)
     sp.set_defaults(fn=cmd_run)
 

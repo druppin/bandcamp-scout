@@ -94,6 +94,20 @@ class Pipeline(unittest.TestCase):
         self.assertEqual((r["status"], r["price_type"]), ("match", "nyp_zero"))
 
 
+    def test_offline_rescore_uses_cache_only(self):
+        from bandcamp_scout import cli
+        self.check(EDIT)
+        self.cache.close()
+        db = Path(self.dir.name) / "scout.db"
+        self.cache = Cache(db)
+        self.cache.put_inputs([make_track(["Nobody"], "Uncached")])  # its search isn't cached: skipped, not crashed
+        self.cache.close()
+        self.assertIsNone(cli.main(["--db", str(db), "run", "--offline"]))
+        self.cache = Cache(db)
+        # both Burial tracks share the cached search "burial archangel", so both re-score offline
+        self.assertEqual(sorted(r["status"] for r in self.cache.rows()), ["match", "review"])
+
+
 class Retries(unittest.TestCase):
     def test_backs_off_on_429_then_succeeds(self):
         replies, slept = [429, 503, 200], []

@@ -48,6 +48,9 @@ class Cache:
                               for t in tracks])
         self.con.commit()
 
+    def all_inputs(self):
+        return [self.get_input(k) for (k,) in self.con.execute("SELECT key FROM inputs ORDER BY rowid")]
+
     def get_input(self, key):
         from .inputs import InputTrack
         row = self.con.execute("SELECT * FROM inputs WHERE key=?", (key,)).fetchone()
