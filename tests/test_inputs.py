@@ -83,3 +83,12 @@ class Files(unittest.TestCase):
         merged = inputs.merge([inputs.make_track(["Burial"], "Archangel", spotify_id="sp1")], mixxx)
         self.assertEqual([t.key for t in merged][0], "sp1")
         self.assertEqual(len(merged), 2)
+
+
+class ListPlaylists(unittest.TestCase):
+    def test_reasons(self):
+        self.assertEqual(len(inputs.list_playlists(Sgh.URL, "sgh_good", transport=sgh())), 2)
+        with self.assertRaisesRegex(inputs.InputError, "401"):
+            inputs.list_playlists(Sgh.URL, "sgh_bad", transport=sgh())
+        with self.assertRaisesRegex(inputs.InputError, "API key"):
+            inputs.list_playlists(Sgh.URL, "")

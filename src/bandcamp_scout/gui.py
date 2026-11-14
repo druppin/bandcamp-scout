@@ -91,7 +91,9 @@ class Settings(QWidget):
         try:
             playlists = inputs.list_playlists(self.url.text(), self.key.text())
         except Exception as e:
-            self.conn_status.setText(f"Not connected: {type(e).__name__}. Is the Assistant running?")
+            msg = str(e) if isinstance(e, inputs.InputError) else f"{type(e).__name__}: {e}"
+            self.conn_status.setText(f"Not connected. {msg}")
+            self.conn_status.setWordWrap(True)
             playlists = [{"id": "liked", "name": "Liked Songs"}]
         else:
             self.conn_status.setText(f"Connected, {len(playlists)} playlists")

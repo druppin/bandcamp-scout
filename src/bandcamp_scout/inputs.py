@@ -48,13 +48,13 @@ def from_song(song: dict) -> InputTrack:
                       song.get("isrc"), song.get("id"))
 
 
-def load_sgh(base_url: str, api_key: str, playlists="all", transport=None) -> list[InputTrack]:
-    """playlists: "all" (every playlist plus liked) or a list of ids."""
+def _sgh_getter(base_url: str, api_key: str, transport=None):
+    """Returns get(path) -> JSON, turning connection/auth failures into readable InputErrors."""
     if not api_key:
         raise InputError("No Subgenre Assistant API key. Set SGH_API_KEY or sgh.api_key in config.toml "
                          "(create one with: npm run api-token create \"bandcamp-scout\").")
     http = httpx.Client(base_url=base_url.rstrip("/") + "/", timeout=30, transport=transport,
-                        headers={"Authorization": f"Bearer {api_key}"})
+                        headers={"Authorization": f"Bearer {api_key.strip()}"})
 
     def get(path):
         try:
@@ -64,10 +64,15 @@ def load_sgh(base_url: str, api_key: str, playlists="all", transport=None) -> li
         if r.status_code == 401:
             raise InputError("The Subgenre Assistant rejected the API key (401). Check sgh.api_key.")
         if r.status_code == 404:
-            raise InputError(f"Not found on the Subgenre Assistant: {path}")
+            raise InputError(f"Not found on the Subgenre Assistant: {r.url} (check the URL ends in /api/v1)")
         r.raise_for_status()
         return r.json()
+    return get
 
+
+def load_sgh(base_url: str, api_key: str, playlists="all", transport=None) -> list[InputTrack]:
+    """playlists: "all" (every playlist plus liked) or a list of ids."""
+    get = _sgh_getter(base_url, api_key, transport)
     if playlists == "all":
         ids = [p["id"] for p in get("playlists")["playlists"]]
         playlists = ["liked"] + [i for i in ids if i != "liked"]
@@ -76,10 +81,7 @@ def load_sgh(base_url: str, api_key: str, playlists="all", transport=None) -> li
 
 
 def list_playlists(base_url: str, api_key: str, transport=None) -> list[dict]:
-    r = httpx.get(base_url.rstrip("/") + "/playlists", headers={"Authorization": f"Bearer {api_key}"},
-                  timeout=10, transport=transport)
-    r.raise_for_status()
-    return r.json()["playlists"]
+    return _sgh_getter(base_url, api_key, transport)("playlists")["playlists"]
 
 
 def load_csv(path) -> list[InputTrack]:
