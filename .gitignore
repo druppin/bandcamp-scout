@@ -2,4 +2,5 @@ __pycache__/
 .venv/
 *.egg-info/
 scout.db
-report.csv
+/*.csv
+.~lock.*
